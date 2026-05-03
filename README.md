@@ -5,16 +5,12 @@ A PyCharm-friendly implementation of **Cog-RAG**
 Hu et al., 2025, arXiv:2511.13201) over a 45-page synthesised medical
 review on chronic stress and cardiovascular health.
 
-The previous single-file version is kept for readability; this one is
-split into a real Python package so PyCharm gives you proper navigation,
-refactoring, run configurations, and tests.
-
 ---
 
 ## Project layout
 
 ```
-cog_rag_demo/
+Cog_RAG/
 ├── README.md
 ├── requirements.txt
 ├── .env.example                            # copy to .env and fill in
@@ -24,10 +20,6 @@ cog_rag_demo/
 │   ├── chronic_stress_cvd_review.pdf       # produced by scripts/build_pdf.py
 │   └── cog_rag_index.pkl                   # produced by scripts/build_index.py
 │
-├── content/                                # the medical text as Python data
-│   ├── __init__.py                         #   exposes ALL_CONTENT
-│   ├── part1.py … part5.py                 #   chapter content as (level, text) tuples
-│   └── pdf_builder.py                      #   reportlab assembly
 │
 ├── cog_rag/                                # ★ the actual package you import
 │   ├── __init__.py                         #   public API
@@ -40,7 +32,6 @@ cog_rag_demo/
 │   └── retrieval.py                        #   cog_rag_answer, vanilla_rag_answer
 │
 ├── scripts/                                # ★ entry points → PyCharm Run Configs
-│   ├── build_pdf.py
 │   ├── build_index.py
 │   └── ask.py
 │
@@ -53,45 +44,14 @@ data flow: `chunking → extraction → hypergraphs → index → retrieval`.
 
 ---
 
-## What was redefined
-
-**Nothing was redefined logically.** Same functions, same algorithms, same
-prompts as the single-file version. The only changes are mechanical:
-
-| Single-file version              | Modular version                            |
-|----------------------------------|--------------------------------------------|
-| `make_client()`                  | `cog_rag.config.make_client`               |
-| `embed`, `chat`, `cosine_matrix` | `cog_rag.llm`                              |
-| `read_pdf`, `chunk_text`         | `cog_rag.chunking`                         |
-| `extract`, `EXTRACTION_PROMPT`   | `cog_rag.extraction`                       |
-| `ThemeHypergraph`, `EntityHypergraph` | `cog_rag.hypergraphs`                 |
-| `CogRagIndex`, `build_index`     | `cog_rag.index`                            |
-| `cog_rag_answer`, `vanilla_rag_answer` | `cog_rag.retrieval`                  |
-| `main()` argparse block          | split into 3 scripts in `scripts/`         |
-
-Two small additions you didn't have before, both worth knowing about:
-
-1. **`Settings` dataclass** in `config.py` — central place where env vars
-   are read. If you want to override deployment names from a test, build
-   a `Settings` object instead of monkey-patching `os.environ`.
-
-2. **`get_settings()`** — module-level singleton so `llm.py` doesn't
-   re-read env vars on every embedding call.
-
----
 
 ## PyCharm setup
 
-### 1. Open the project
+### 1. Create the project
 
-`File → Open` and select the `cog_rag_demo` folder. **Do not** open the
-parent folder; PyCharm needs the project root to be the directory that
-contains `cog_rag/`, `content/`, and `scripts/`.
+`File → New Project` and create the `Cog_RAG` folder.
 
-### 2. Configure the interpreter
-
-`File → Settings → Project → Python Interpreter → Add Interpreter →
-Add Local Interpreter → Virtualenv Environment → New`.
+### 2. Create the necessary directory structures and place the python files to make a modular structure defined above
 
 Then in the terminal at the project root:
 ```bash
@@ -127,7 +87,6 @@ Create three Run Configurations (Run → Edit Configurations → `+` → Python)
 
 | Name             | Script path              | Working directory  | Parameters                                |
 |------------------|--------------------------|--------------------|-------------------------------------------|
-| Build PDF        | `scripts/build_pdf.py`   | `<project root>`   | (none)                                    |
 | Build index      | `scripts/build_index.py` | `<project root>`   | (none)                                    |
 | Ask (default)    | `scripts/ask.py`         | `<project root>`   | (none)                                    |
 | Ask (custom)     | `scripts/ask.py`         | `<project root>`   | `--question "your question" --mode cog`   |
